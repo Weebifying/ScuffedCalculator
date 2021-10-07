@@ -1,4 +1,6 @@
 from typing import NoReturn
+import string
+
 from kivymd.app import MDApp
 
 from kivy.lang import Builder
@@ -34,12 +36,15 @@ class CalcWidget(Widget):
     firstNumber = "0"
     secondNumber = "0"
     a = False
+    b = False
 
     def clearAll(self):
         self.currentSign = ""
         self.firstNumber = "0"
         self.secondNumber = "0"
         self.ids.calcText.text = "0"
+        self.a = False
+        self.b = False
 
     def delete(self):
         if len(self.ids.calcText.text) >= 2:
@@ -58,6 +63,7 @@ class CalcWidget(Widget):
         
 
     def changeSign(self, value):
+        self.b = False
         if self.currentSign != "":
             self.getResult()
             # self.ids.calcText.text = self.firstNumber
@@ -65,6 +71,21 @@ class CalcWidget(Widget):
         self.a = True
         self.secondNumber = self.firstNumber
 
+    def addDot(self):
+        if "." in self.ids.calcText.text:
+            return
+        else:
+            if self.b:
+                self.firstNumber = "0."
+                self.ids.calcText.text = "0."
+            else:
+                if self.currentSign == "":
+                    self.firstNumber += "."
+                else:
+                    self.secondNumber += "."
+                self.ids.calcText.text += "."
+
+            self.b = False
 
     def addNumber(self, value):
         # if len(self.ids.calcText.text) > 11:
@@ -81,6 +102,15 @@ class CalcWidget(Widget):
 
         # self.ids.calcText.text += str(value)
         # self.secondNumber = self.ids.calcText.text
+
+        if self.currentSign == "" and len(self.firstNumber.translate(str.maketrans('', '', '.'))) > 12:
+            return
+        if self.currentSign != "" and len(self.secondNumber.translate(str.maketrans('', '', '.'))) > 12:
+            return
+
+        if "E" in self.ids.calcText.text:
+            self.firstNumber = "0"
+            self.ids.calcText.text = "0"
 
         if self.ids.calcText.text == "0":
             self.ids.calcText.text = ""
@@ -132,10 +162,12 @@ class CalcWidget(Widget):
 
         print(self.firstNumber, self.currentSign, self.secondNumber, "=", str(result))
         self.firstNumber = str(eval(string))
+        self.b = True
 
 
 class Calculator(MDApp):
     def build(self):
+        self.icon = "calc.png"
         return CalcWidget()
 
 
