@@ -1,5 +1,6 @@
 from typing import NoReturn
 import string
+from math import sqrt
 
 from kivymd.app import MDApp
 
@@ -60,7 +61,22 @@ class CalcWidget(Widget):
             self.firstNumber = str(numberify(self.firstNumber) * (-1))
         else:
             self.secondNumber = str(numberify(self.secondNumber) * (-1))
-        
+
+    def squareRoot(self):
+        try:
+            self.ids.calcText.text = str(sqrt(numberify(self.ids.calcText.text)))
+            if self.currentSign == "":
+                self.firstNumber = str(sqrt(numberify(self.firstNumber)))
+            else:
+                self.secondNumber = str(sqrt(numberify(self.secondNumber)))
+        except ValueError:
+            self.ids.calcText.text = "NaN"
+            if self.currentSign == "":
+                self.firstNumber = "0"
+            else:
+                self.secondNumber = "0"
+            
+
 
     def changeSign(self, value):
         self.b = False
@@ -108,7 +124,7 @@ class CalcWidget(Widget):
         if self.currentSign != "" and len(self.secondNumber.translate(str.maketrans('', '', '.'))) > 12:
             return
 
-        if "E" in self.ids.calcText.text:
+        if ("E" in self.ids.calcText.text) or (self.ids.calcText.text == "INF"):
             self.firstNumber = "0"
             self.ids.calcText.text = "0"
 
@@ -140,10 +156,15 @@ class CalcWidget(Widget):
         if string == "9+10" or string == "10+9":
             result = ["21"]
         else:
-            result = str(eval(string)).split(".")
+            result = str(round(eval(string), 12)).split(".")
 
-        if len(result[0]) > 12:
+        if abs(eval(string)) < 0.00000000001:
+            self.ids.calcText.text = "{:E}".format(float(eval(string)))
+            self.firstNumber = str(eval(string))
+            
+        elif len(result[0]) > 12:
             self.ids.calcText.text = "{:E}".format(float(result[0]))
+            self.firstNumber = str(round(eval(string), 12))
         else:
             try:
                 num = result[0]
@@ -159,9 +180,9 @@ class CalcWidget(Widget):
 
             except IndexError:
                 self.ids.calcText.text = num
+            self.firstNumber = str(round(eval(string), 12))
 
         print(self.firstNumber, self.currentSign, self.secondNumber, "=", str(result))
-        self.firstNumber = str(eval(string))
         self.b = True
 
 
